@@ -1,13 +1,14 @@
 {
-  "name": "iobroker.history",
+  "name": "iobroker.history-mongodb",
   "description": "Log state history in a two-stages process (first to RAM, then to disk)",
-  "version": "4.0.1",
+  "version": "1.0.0",
   "author": "hobbyquaker <hq@ccu.io>",
   "contributors": [
     "bluefox <dogafox@gmail.com>",
     "smiling-Jack",
     "hobbyquaker <hq@ccu.io>",
-    "Apollon77"
+    "Apollon77",
+    "nop"
   ],
   "homepage": "https://github.com/ioBroker/ioBroker.history",
   "repository": {
