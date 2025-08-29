@@ -1,13 +1,13 @@
 ![Logo](admin/history.png)
-# ioBroker.history
+# ioBroker.history-mongodb
 
-![Number of Installations](http://iobroker.live/badges/history-installed.svg)
-![Number of Installations](http://iobroker.live/badges/history-stable.svg)
-[![NPM version](http://img.shields.io/npm/v/iobroker.history.svg)](https://www.npmjs.com/package/iobroker.history)
+![Number of Installations](http://iobroker.live/badges/history-mongodb-installed.svg)
+![Number of Installations](http://iobroker.live/badges/history-mongodb-stable.svg)
+[![NPM version](http://img.shields.io/npm/v/iobroker.history-mongodb.svg)](https://www.npmjs.com/package/iobroker.history-mongodb)
 
 ![Test and Release](https://github.com/ioBroker/iobroker.history/workflows/Test%20and%20Release/badge.svg)
 [![Translation status](https://weblate.iobroker.net/widgets/adapters/-/history/svg-badge.svg)](https://weblate.iobroker.net/engage/adapters/?utm_source=widget)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.history.svg)](https://www.npmjs.com/package/iobroker.history)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.history-mongodb.svg)](https://www.npmjs.com/package/iobroker.history-mongodb)
 
 This adapter saves state history in a two-staged process.
 
