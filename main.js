@@ -7,7 +7,7 @@ const dataDir     = utils.getAbsoluteDefaultDataDir();
 const DEBUG = true;
 function debugLog(...args) {
     if (DEBUG) {
-        console.log('[DEBUG]', new Date().toISOString(), ...args);
+        console.debug('[DEBUG]', new Date().toISOString(), ...args);
     }
 }
 
