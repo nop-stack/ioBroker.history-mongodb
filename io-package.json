@@ -1,7 +1,7 @@
 {
   "common": {
-    "name": "history",
-    "title": "History",
+    "name": "history-mongo",
+    "title": "History MongoDB",
     "titleLang": {
       "en": "History",
       "de": "History",
@@ -15,8 +15,8 @@
       "zh-cn": "历史"
     },
     "desc": {
-      "en": "Logging of the state history in files",
-      "de": "Protokollierung der Zustandsgeschichte in Dateien",
+      "en": "Logging of the state history in MongoDB",
+      "de": "Protokollierung der Zustandsgeschichte in MongoDB",
       "ru": "Ведение истории событий в файлах",
       "pt": "Registro do histórico de estado em arquivos",
       "nl": "Logboekregistratie van de statusgeschiedenis in bestanden",
@@ -26,8 +26,20 @@
       "pl": "Rejestrowanie historii stanu w plikach",
       "zh-cn": "在文件中记录状态历史记录"
     },
-    "version": "3.0.1",
+    "version": "4.0.0",
     "news": {
+      "4.0.0": {
+        "en": "Added MongoDB support as storage backend",
+        "de": "MongoDB-Unterstützung als Speicher-Backend hinzugefügt",
+        "ru": "Добавлена поддержка MongoDB в качестве хранилища",
+        "pt": "Adicionado suporte MongoDB como backend de armazenamento",
+        "nl": "MongoDB-ondersteuning toegevoegd als opslagbackend",
+        "fr": "Ajout du support MongoDB comme backend de stockage",
+        "it": "Aggiunto supporto MongoDB come backend di archiviazione",
+        "es": "Se agregó soporte de MongoDB como backend de almacenamiento",
+        "pl": "Dodano obsługę MongoDB jako backend pamięci masowej",
+        "zh-cn": "添加 MongoDB 支持作为存储后端"
+      },
       "3.0.1": {
         "en": "activated the round option when averaging",
         "de": "aktiviert die runde option bei der mittelung",
