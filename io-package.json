@@ -1,6 +1,6 @@
 {
   "common": {
-  "name": "history-mongodb",
+    "name": "history-mongo",
     "title": "History MongoDB",
     "titleLang": {
       "en": "History",
@@ -27,6 +27,9 @@
       "zh-cn": "在文件中记录状态历史记录"
     },
     "version": "4.0.0",
+    "platform": "Javascript/Node.js",
+    "mode": "daemon",
+    "materialize": true,
     "news": {
       "4.0.0": {
         "en": "Added MongoDB support as storage backend",
@@ -129,8 +132,6 @@
         "zh-cn": "Sentry所报告的六例事故"
       }
     },
-    "mode": "daemon",
-    "platform": "Javascript/Node.js",
     "loglevel": "info",
     "messagebox": true,
     "subscribe": "messagebox",
@@ -142,7 +143,9 @@
       "graphs",
       "Graphen",
       "data",
-      "archive"
+      "archive",
+      "mongodb",
+      "database"
     ],
     "enabled": true,
     "compact": true,
@@ -153,9 +156,9 @@
       "Apollon77 <ingo@fischer-ka.de>"
     ],
     "license": "MIT",
-    "readme": "https://github.com/ioBroker/ioBroker.history/blob/master/README.md",
+    "readme": "https://github.com/nop-stack/ioBroker.history-mongo/blob/master/README.md",
     "icon": "history.png",
-    "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.history/master/admin/history.png",
+    "extIcon": "https://raw.githubusercontent.com/nop-stack/ioBroker.history-mongo/master/admin/history.png",
     "type": "storage",
     "supportCustoms": true,
     "getHistory": true,

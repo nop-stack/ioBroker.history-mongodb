@@ -10,14 +10,16 @@
     "Apollon77",
     "nop"
   ],
-  "homepage": "https://github.com/ioBroker/ioBroker.history",
+  "homepage": "https://github.com/nop-stack/ioBroker.history-mongo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ioBroker/ioBroker.history"
+    "url": "https://github.com/nop-stack/ioBroker.history-mongo"
   },
   "keywords": [
     "ioBroker",
     "log data",
+    "mongodb",
+    "database",
     "home automation"
   ],
   "dependencies": {
