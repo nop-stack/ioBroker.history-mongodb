@@ -26,12 +26,12 @@
       "pl": "Rejestrowanie historii stanu w plikach",
       "zh-cn": "在文件中记录状态历史记录"
     },
-    "version": "4.0.0",
+    "version": "4.0.1",
     "platform": "Javascript/Node.js",
     "mode": "daemon",
     "materialize": true,
     "news": {
-      "4.0.0": {
+      "4.0.1": {
         "en": "Added MongoDB support as storage backend",
         "de": "MongoDB-Unterstützung als Speicher-Backend hinzugefügt",
         "ru": "Добавлена поддержка MongoDB в качестве хранилища",

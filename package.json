@@ -1,7 +1,7 @@
 {
   "name": "iobroker.history-mongodb",
   "description": "Log state history in MongoDB database",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "author": "hobbyquaker <hq@ccu.io>",
   "contributors": [
     "bluefox <dogafox@gmail.com>",
