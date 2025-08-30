@@ -3,10 +3,12 @@
 /* jslint node: true */
 'use strict';
 const cp          = require('child_process');
-import { ChildProcess } from 'child_process';
-import { isNumberObject } from 'util/types';
 const utils       = require('@iobroker/adapter-core'); // Get common adapter utils
 const dataDir     = utils.getAbsoluteDefaultDataDir();
+
+function isNumberObject(value) {
+    return typeof value === 'number' && !isNaN(value);
+}
 const fs          = require('fs');
 const GetHistory  = require('./lib/getHistory.js');
 const Aggregate   = require('./lib/aggregate.js');
@@ -908,30 +910,29 @@ function checkRetention(id) {
     }
 }
 
-function appendFile(id, states) {
+async function appendFile(id, states) {
     // Check storage type from config
     if (adapter.config.storageType === 'mongodb') {
         // Use MongoDB storage
         const MongoDBStorage = require('./lib/mongodb-storage');
         const mongodb = new MongoDBStorage(adapter.config.mongoUrl, adapter.config.mongoDatabase);
         
-        mongodb.connect()
-            .then(async () => {
-                try {
-                    for (const state of states) {
-                        try {
-                            await mongodb.store(id, state);
-                        } catch (storeErr) {
-                            adapter.log.error(`Cannot store state in MongoDB: ${storeErr}`);
-                        }
-                    }
-                } catch (err) {
-                    adapter.log.error(`Cannot store states in MongoDB: ${err}`);
+        try {
+            const connected = await mongodb.connect();
+            if (!connected) {
+                adapter.log.error('Could not connect to MongoDB');
+                return;
+            }
+
+            for (const state of states) {
+                const stored = await mongodb.store(id, state);
+                if (!stored) {
+                    adapter.log.error(`Could not store state for ${id} in MongoDB`);
                 }
-            })
-            .catch(err => {
-                adapter.log.error(`Cannot initialize MongoDB storage: ${err}`);
-            });
+            }
+        } catch (err) {
+            adapter.log.error(`Error working with MongoDB: ${err}`);
+        }
     } else {
         // Use file storage (default)
         const day = GetHistory.ts2day(states[states.length - 1].ts);
@@ -2017,7 +2018,7 @@ function getEnabledDPs(msg) {
 }
 
 // If started as allInOne/compact mode => return function to create instance
-if (module && module.parent) {
+if (module) {
     module.exports = startAdapter;
 } else {
     // or start the instance directly
