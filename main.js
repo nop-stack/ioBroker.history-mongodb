@@ -911,8 +911,8 @@ async function appendFile(id, states) {
     // Check storage type from config
     if (adapter.config.storageType === 'mongodb') {
         // Use MongoDB storage
-        const MongoDBStorage = require('./lib/mongodb-storage');
-        const mongodb = new MongoDBStorage(adapter.config.mongoUrl, adapter.config.mongoDatabase);
+        const MongoDBStorage = require('./lib/mongoDbStorage');
+        const mongodb = new MongoDBStorage(adapter.config);
         
         try {
             const connected = await mongodb.connect();
