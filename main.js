@@ -5,6 +5,10 @@
 const cp          = require('child_process');
 const utils       = require('@iobroker/adapter-core'); // Get common adapter utils
 const dataDir     = utils.getAbsoluteDefaultDataDir();
+
+function isNumberObject(value) {
+    return typeof value === 'number' && !isNaN(value);
+}
 const fs          = require('fs');
 const GetHistory  = require('./lib/getHistory.js');
 const Aggregate   = require('./lib/aggregate.js');
@@ -867,7 +871,7 @@ function checkRetention(id) {
         if (!history[id].lastCheck || dt - history[id].lastCheck >= 21600000/* 6 hours */) {
             history[id].lastCheck = dt;
             // get list of directories
-            const dayList = getDirectories(adapter.config.storeDir).sort((a, b) => a - b);
+            const dayList = getDirectories(adapter.config.storeDir).sort((a, b) => parseInt(a) - parseInt(b));
             // calculate date
             d.setSeconds(-(history[id][adapter.namespace].retention));
 
@@ -906,47 +910,71 @@ function checkRetention(id) {
     }
 }
 
-function appendFile(id, states) {
-    const day = GetHistory.ts2day(states[states.length - 1].ts);
-
-    const file = GetHistory.getFilenameForID(adapter.config.storeDir, day, id);
-    let data;
-
-    let i;
-    for (i = states.length - 1; i >= 0; i--) {
-        if (!states[i]) {
-            continue;
-        }
-        if (GetHistory.ts2day(states[i].ts) !== day) {
-            break;
-        }
-    }
-
-    data = states.splice(i - states.length + 1);
-
-    if (fs.existsSync(file)) {
+async function appendFile(id, states) {
+    // Check storage type from config
+    if (adapter.config.storageType === 'mongodb') {
+        // Use MongoDB storage
+        const MongoDBStorage = require('./lib/mongodb-storage');
+        const mongodb = new MongoDBStorage(adapter.config.mongoUrl, adapter.config.mongoDatabase);
+        
         try {
-            data = JSON.parse(fs.readFileSync(file, 'utf8')).concat(data);
+            const connected = await mongodb.connect();
+            if (!connected) {
+                adapter.log.error('Could not connect to MongoDB');
+                return;
+            }
+
+            for (const state of states) {
+                const stored = await mongodb.store(id, state);
+                if (!stored) {
+                    adapter.log.error(`Could not store state for ${id} in MongoDB`);
+                }
+            }
         } catch (err) {
-            adapter.log.error(`Cannot read file ${file}: ${err}`);
+            adapter.log.error(`Error working with MongoDB: ${err}`);
         }
-    }
+    } else {
+        // Use file storage (default)
+        const day = GetHistory.ts2day(states[states.length - 1].ts);
+        const file = GetHistory.getFilenameForID(adapter.config.storeDir, day, id);
+        let data;
 
-    try {
-        // create directory
-        if (!fs.existsSync(adapter.config.storeDir + day)) {
-            fs.mkdirSync(adapter.config.storeDir + day);
+        let i;
+        for (i = states.length - 1; i >= 0; i--) {
+            if (!states[i]) {
+                continue;
+            }
+            if (GetHistory.ts2day(states[i].ts) !== day) {
+                break;
+            }
         }
-        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
-    } catch (ex) {
-        adapter.log.error(`Cannot store file ${file}: ${ex}`);
-    }
 
-    if (states.length) {
-        appendFile(id, states);
-    }
+        data = states.splice(i - states.length + 1);
 
-    checkRetention(id);
+        if (fs.existsSync(file)) {
+            try {
+                data = JSON.parse(fs.readFileSync(file, 'utf8')).concat(data);
+            } catch (err) {
+                adapter.log.error(`Cannot read file ${file}: ${err}`);
+            }
+        }
+
+        try {
+            // create directory
+            if (!fs.existsSync(adapter.config.storeDir + day)) {
+                fs.mkdirSync(adapter.config.storeDir + day);
+            }
+            fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+        } catch (ex) {
+            adapter.log.error(`Cannot store file ${file}: ${ex}`);
+        }
+
+        if (states.length) {
+            appendFile(id, states);
+        }
+
+        checkRetention(id);
+    }
 }
 
 function getOneCachedData(id, options, cache, addId) {
@@ -1098,9 +1126,9 @@ function getFileData(options, callback) {
     // get list of directories
     let dayList = getDirectories(options.path);
     if (options.returnNewestEntries) {
-        dayList = dayList.sort((a, b) => b - a);
+        dayList = dayList.sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
     } else {
-        dayList = dayList.sort((a, b) => a - b);
+        dayList = dayList.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
     }
 
     if (options.id && options.id !== '*') {
@@ -1239,12 +1267,12 @@ function getHistory(msg) {
         options.start = Date.now() - 86400000; // - 1 day
     }
 
-    if (options.aggregate === 'percentile' && options.percentile < 0 || options.percentile > 100) {
+    if (options.aggregate === 'percentile' && (options.percentile ?? 50) < 0 || (options.percentile ?? 50) > 100) {
         adapter.log.error(`Invalid percentile value: ${options.percentile}, use 50 as default`);
         options.percentile = 50;
     }
 
-    if (options.aggregate === 'quantile' && options.quantile < 0 || options.quantile > 1) {
+    if (options.aggregate === 'quantile' && (options.quantile ?? 0.5) < 0 || (options.quantile ?? 0.5) > 1) {
         adapter.log.error(`Invalid quantile value: ${options.quantile}, use 0.5 as default`);
         options.quantile = 0.5;
     }
@@ -1343,11 +1371,9 @@ function getHistory(msg) {
                     } catch (err) {
                         adapter.log.error(err.message);
                     }
-                    gh = null;
                 }, 120000);
 
                 gh.on('error', err => {
-                    gh = null;
                     !responseSent && adapter.log.info(`${options.logId} Error communicating to forked process: ${err.message}`);
                     !responseSent && adapter.sendTo(msg.from, msg.command, {
                         result: [],
@@ -1370,14 +1396,12 @@ function getHistory(msg) {
                         });
                     } else if (cmd === 'response') {
                         clearTimeout(ghTimeout);
-                        ghTimeout = null;
 
                         try {
                             gh.send(['exit']);
                         } catch (err) {
                             adapter.log.info(`${options.logId} Can not exit forked process: ${err.message}`);
                         }
-                        gh = null;
 
                         options.result = applyOptions(data[1], options);
                         const overallLength = data[2];
@@ -1401,7 +1425,7 @@ function getHistory(msg) {
                             responseSent = true;
                         }
                     } else if (cmd === 'debug') {
-                        let line = data.slice(1).join(', ');
+                        let line = Array.isArray(data) ? data.slice(1).join(', ') : '';
                         if (line.includes(options.logId)) {
                             line = line.replace(`${options.logId} `, '');
                         }
@@ -1421,7 +1445,7 @@ function getHistory(msg) {
                 GetHistory.aggregation(options, cachedData);
                 const data = GetHistory.response(options);
 
-                if (data[0] === 'response') {
+                if (Array.isArray(data) && data[0] === 'response') {
                     if (data[1]) {
                         adapter.log.debug(`${options.logId} Send: ${data[1].length} of: ${data[2]} in: ${Date.now() - startTime}ms`);
                         options.result = applyOptions(data[1], options);
@@ -1440,7 +1464,7 @@ function getHistory(msg) {
                         }, msg.callback);
                     }
                 } else {
-                    adapter.log.error(`${options.logId} Unknown response type: ${data[0]}`);
+                    adapter.log.error(`${options.logId} Unknown response type: ${data && data.length > 0 ? data[0] : 'null'}`);
                 }
             });
         }
@@ -1503,9 +1527,10 @@ function update(id, state) {
 
     if (!found) {
         const day = GetHistory.ts2day(state.ts);
-        if (!isNaN(day)) {
+        if (isNumberObject(day)) {
+            const dayAsNumber = parseInt(day, 10);
             const file = GetHistory.getFilenameForID(adapter.config.storeDir, day, id);
-            const tsCheck = new Date(Math.floor(day / 10000), 0, 1).getTime();
+            const tsCheck = new Date(Math.floor(dayAsNumber / 10000), 0, 1).getTime();
 
             if (fs.existsSync(file)) {
                 try {
@@ -1590,11 +1615,11 @@ function _delete(id, state) {
         const files = [];
         if (state.ts) {
             const day = GetHistory.ts2day(state.ts);
-            if (!isNaN(day)) {
+            if (isNumberObject(day)) {
                 const file = GetHistory.getFilenameForID(adapter.config.storeDir, day, id);
 
                 if (fs.existsSync(file)) {
-                    files.push({file, day});
+                    files.push({file, dayAsNumber: parseInt(day, 10)});
                 }
             }
         } else {
@@ -1614,15 +1639,17 @@ function _delete(id, state) {
                 dayEnd   = parseInt(GetHistory.ts2day(Date.now()), 10);
             }
 
-            const dayList = getDirectories(adapter.config.storeDir).sort((a, b) => b - a);
+            const dayList = getDirectories(adapter.config.storeDir).sort((a, b) => b.localeCompare(a));
 
             for (let i = 0; i < dayList.length; i++) {
                 const day = parseInt(dayList[i], 10);
 
-                if (!isNaN(day) && day >= dayStart && day <= dayEnd) {
+                if (isNumberObject(day) && day >= dayStart && day <= dayEnd) {
+                    const dayAsNumber = parseInt(dayList[i], 10);
+                        
                     const file = GetHistory.getFilenameForID(adapter.config.storeDir, dayList[i], id);
                     if (fs.existsSync(file)) {
-                        files.push({file, day});
+                        files.push({file, dayAsNumber});
                     }
                 }
             }
@@ -1630,7 +1657,7 @@ function _delete(id, state) {
 
         files.forEach(entry => {
             try {
-                const tsCheck = new Date(Math.floor(entry.day / 10000), 0, 1).getTime();
+                const tsCheck = new Date(Math.floor(entry.dayAsNumber / 10000), 0, 1).getTime();
                 let res = JSON.parse(fs.readFileSync(entry.file, 'utf8')).sort(tsSort);
 
                 if (!state.ts && !state.start && !state.end) {
@@ -1991,7 +2018,7 @@ function getEnabledDPs(msg) {
 }
 
 // If started as allInOne/compact mode => return function to create instance
-if (module && module.parent) {
+if (module) {
     module.exports = startAdapter;
 } else {
     // or start the instance directly

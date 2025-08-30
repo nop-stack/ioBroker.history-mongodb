@@ -1,6 +1,6 @@
 {
   "common": {
-    "name": "history-mongo",
+  "name": "history-mongodb",
     "title": "History MongoDB",
     "titleLang": {
       "en": "History",
@@ -260,7 +260,10 @@
     "disableSkippedValueLogging": false,
     "enableLogging": false,
     "round": "",
-    "customRetentionDuration": 365
+    "customRetentionDuration": 365,
+    "storageType": "file",
+    "mongoUrl": "",
+    "mongoDatabase": "iobroker_history"
   },
   "objects": []
 }
