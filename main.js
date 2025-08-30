@@ -3,6 +3,17 @@ const cp          = require('child_process');
 const utils       = require('@iobroker/adapter-core'); // Get common adapter utils
 const dataDir     = utils.getAbsoluteDefaultDataDir();
 
+// Setup detailed logging
+const DEBUG = true;
+function debugLog(...args) {
+    if (DEBUG) {
+        console.log('[DEBUG]', new Date().toISOString(), ...args);
+    }
+}
+
+debugLog('Initializing adapter...');
+debugLog('Data directory:', dataDir);
+
 function isNumberObject(value) {
     return typeof value === 'number' && !isNaN(value);
 }
@@ -64,9 +75,11 @@ function isEqual(a, b) {
 let adapter;
 function startAdapter(options) {
     options = options || {};
+    
+    console.log('Starting adapter with options:', JSON.stringify(options));
+    console.log('Adapter name from package.json:', adapterName);
 
     Object.assign(options, {
-
         name: adapterName,
 
         objectChange: (id, obj) => {
