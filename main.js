@@ -907,6 +907,39 @@ function checkRetention(id) {
 }
 
 function appendFile(id, states) {
+    if (adapter.config.storageType === 'mongodb') {
+        appendFileMongoDB(id, states);
+    } else {
+        appendFileFS(id, states);
+    }
+}
+
+function appendFileMongoDB(id, states) {
+        // Use MongoDB storage
+        const MongoDBStorage = require('./lib/mongoDbStorage');
+        const mongodb = new MongoDBStorage(adapter.config);
+        
+        try {
+            const connected = await mongodb.connect();
+            if (!connected) {
+                adapter.log.error('Could not connect to MongoDB');
+                return;
+            }
+
+            for (const state of states) {
+                const stored = await mongodb.store(id, state);
+                if (!stored) {
+                    adapter.log.error(`Could not store state for ${id} in MongoDB`);
+                }
+            }
+        } catch (err) {
+            adapter.log.error(`Error working with MongoDB: ${err}`);
+        }
+    
+}
+
+function appendFileFS(id, states) {
+    
     const day = GetHistory.ts2day(states[states.length - 1].ts);
 
     const file = GetHistory.getFilenameForID(adapter.config.storeDir, day, id);
