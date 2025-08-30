@@ -1,6 +1,6 @@
 {
   "common": {
-    "name": "history-mongo",
+    "name": "history-mongodb",
     "title": "History MongoDB",
     "titleLang": {
       "en": "History",
