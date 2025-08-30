@@ -1,7 +1,7 @@
 {
   "common": {
   "name": "history-mongodb",
-    "title": "History",
+    "title": "History MongoDB",
     "titleLang": {
       "en": "History",
       "de": "History",
@@ -15,7 +15,7 @@
       "zh-cn": "历史"
     },
     "desc": {
-      "en": "Logging of the state history in files",
+      "en": "Logging of the state history into mongodb",
       "de": "Protokollierung der Zustandsgeschichte in Dateien",
       "ru": "Ведение истории событий в файлах",
       "pt": "Registro do histórico de estado em arquivos",
@@ -26,7 +26,7 @@
       "pl": "Rejestrowanie historii stanu w plikach",
       "zh-cn": "在文件中记录状态历史记录"
     },
-    "version": "3.0.1",
+    "version": "1.0.0",
     "news": {
       "3.0.1": {
         "en": "activated the round option when averaging",
