@@ -920,14 +920,15 @@ function appendFileMongoDB(id, states) {
         const mongodb = new MongoDBStorage(adapter.config);
         
         try {
-            const connected = await mongodb.connect();
+            const connected = mongodb.connect();
+
             if (!connected) {
                 adapter.log.error('Could not connect to MongoDB');
                 return;
             }
 
             for (const state of states) {
-                const stored = await mongodb.store(id, state);
+                const stored = mongodb.store(id, state);
                 if (!stored) {
                     adapter.log.error(`Could not store state for ${id} in MongoDB`);
                 }
