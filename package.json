@@ -1,26 +1,30 @@
 {
-  "name": "iobroker.history",
-  "description": "Log state history in a two-stages process (first to RAM, then to disk)",
-  "version": "3.0.1",
+  "name": "iobroker.history-mongodb",
+  "description": "Log state history in MongoDB database",
+  "version": "4.0.1",
   "author": "hobbyquaker <hq@ccu.io>",
   "contributors": [
     "bluefox <dogafox@gmail.com>",
     "smiling-Jack",
     "hobbyquaker <hq@ccu.io>",
-    "Apollon77"
+    "Apollon77",
+    "nop"
   ],
-  "homepage": "https://github.com/ioBroker/ioBroker.history",
+  "homepage": "https://github.com/nop-stack/ioBroker.history-mongo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ioBroker/ioBroker.history"
+    "url": "https://github.com/nop-stack/ioBroker.history-mongo"
   },
   "keywords": [
     "ioBroker",
     "log data",
+    "mongodb",
+    "database",
     "home automation"
   ],
   "dependencies": {
-    "@iobroker/adapter-core": "^3.1.6"
+    "@iobroker/adapter-core": "^3.1.6",
+    "mongodb": "^6.19.0"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^3.7.3",
