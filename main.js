@@ -917,7 +917,7 @@ function appendFile(id, states) {
 function appendFileMongoDB(id, states) {
         // Use MongoDB storage
         const MongoDBStorage = require('./lib/mongoDbStorage');
-        const mongodb = new MongoDBStorage(adapter.config);
+        const mongodb = new MongoDBStorage(adapter);
         
         try {
             const connected = mongodb.connect();
