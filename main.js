@@ -1,6 +1,3 @@
-/* jshint -W097 */
-/* jshint strict: false */
-/* jslint node: true */
 'use strict';
 const cp          = require('child_process');
 const utils       = require('@iobroker/adapter-core'); // Get common adapter utils
@@ -237,8 +234,12 @@ function startAdapter(options) {
                         clearTimeout(history[id].timeout);
                         history[id].timeout = null;
                     }
-                    storeCached(true, id);
-                    delete history[id];
+
+                    const p = storeCached(true, id);
+
+                    if (p != null){
+                        p.then(() => delete history[id]);
+                    }
                 }
             }
         },
@@ -291,9 +292,11 @@ function storeCached(isFinishing, onlyId) {
 
         if (history[id].list && history[id].list.length) {
             adapter.log.debug(`Store the rest for ${id}`);
-            appendFile(id, history[id].list);
+            return appendFile(id, history[id].list);
         }
     }
+
+    return null;
 }
 
 function finish(callback) {
@@ -908,9 +911,9 @@ function checkRetention(id) {
 
 function appendFile(id, states) {
     if (adapter.config.storageType === 'mongodb') {
-        appendFileMongoDB(id, states);
+        return appendFileMongoDB(id, states);
     } else {
-        appendFileFS(id, states);
+        return appendFileFS(id, states);
     }
 }
 
@@ -919,9 +922,7 @@ function appendFileMongoDB(id, states) {
         const MongoDBStorage = require('./lib/mongoDbStorage');
         const mongodb = new MongoDBStorage(adapter);
         
-        try {
-            const connected = mongodb.connect();
-
+        return mongodb.connect().then((connected) => {
             if (!connected) {
                 adapter.log.error('Could not connect to MongoDB');
                 return;
@@ -933,10 +934,9 @@ function appendFileMongoDB(id, states) {
                     adapter.log.error(`Could not store state for ${id} in MongoDB`);
                 }
             }
-        } catch (err) {
-            adapter.log.error(`Error working with MongoDB: ${err}`);
-        }
-    
+        }).catch((err) => {
+            adapter.log.error(`Error in MongoDB operation: ${err}`);
+        });
 }
 
 function appendFileFS(id, states) {
@@ -977,10 +977,12 @@ function appendFileFS(id, states) {
     }
 
     if (states.length) {
-        appendFile(id, states);
+        return appendFileFS(id, states);
     }
 
     checkRetention(id);
+
+    return Promise.resolve();
 }
 
 function getOneCachedData(id, options, cache, addId) {
